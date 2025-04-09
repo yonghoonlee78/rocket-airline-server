@@ -5,7 +5,7 @@ describe('Flight Router', () => {
   test('GET /flight - 응답은 JSON 문자열이어야 함', async () => {
     const res = await request(app).get('/flight');
 
-    expect(res.text).toBe.not('not implemented');
+    expect(res.text).not.toBe('not implemented');
     expect(() => JSON.parse(res.text)).not.toThrow();
   });
 

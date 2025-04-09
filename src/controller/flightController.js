@@ -5,8 +5,7 @@ module.exports = {
   // 요청 된 departure_times, arrival_times, destination, departure 값과 동일한 값을 가진 항공편 데이터를 조회합니다.
   findAll: (req, res) => {
     // TODO:
-
-    return res.status(200).json('not implemented');
+    return res.status(200).send('not implemented');
   },
   // [GET] /flight/:id
   // 요청 된 id 값과 동일한 uuid 값을 가진 항공편 데이터를 조회합니다.
