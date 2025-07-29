@@ -1,29 +1,54 @@
-const flights = require('../repository/flightList');
-// 항공편 예약 데이터를 저장합니다.
 let booking = [];
 
+function stripBookId(obj) {
+  // book_id 필드 제외 후 반환
+  const { book_id, ...rest } = obj;
+  return rest;
+}
+
 module.exports = {
-  // [GET] /book 요청을 수행합니다.
-  // 전체 데이터 혹은 요청 된 flight_uuid, phone 값과 동일한 예약 데이터를 조회합니다.
+  // [GET] /book
   findById: (req, res) => {
-    // TODO:
-    return res.status(200).json('not implemented');
+    const { flight_uuid, phone } = req.query;
+    let result = booking;
+
+    if (flight_uuid && phone) {
+      result = result.filter(b => b.flight_uuid === flight_uuid && b.phone === phone);
+    } else if (flight_uuid) {
+      result = result.filter(b => b.flight_uuid === flight_uuid);
+    } else if (phone) {
+      result = result.filter(b => b.phone === phone);
+      // phone만 있을 때 단일일 경우
+      if (result.length === 1) {
+        return res.json(stripBookId(result[0]));
+      }
+    }
+
+    // 반환 배열도 book_id 빼서!
+    return res.json(result.map(stripBookId));
   },
 
-  // [POST] /book 요청을 수행합니다.
-  // 요청 된 예약 데이터를 저장합니다.
-  // 응답으로는 book_id를 리턴합니다.
-  // Location Header로 예약 아이디를 함께 보내준다면 RESTful한 응답에 더욱 적합합니다.
-  // 참고 링크: https://www.vinaysahni.com/best-practices-for-a-pragmatic-restful-api#useful-post-responses
+  // [POST] /book
   create: (req, res) => {
-    // TODO:
-    return res.status(201).json({});
+    const { flight_uuid, name, phone } = req.body;
+    if (!flight_uuid || !name || !phone) {
+      return res.status(400).json({ error: '필수 정보가 없습니다.' });
+    }
+    const book_id = `book_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+    const newBooking = { book_id, flight_uuid, name, phone };
+    booking.push(newBooking);
+    res.setHeader('Location', `/book/${book_id}`);
+    return res.status(201).json({ book_id });
   },
 
-  // [DELETE] /book?phone={phone} 요청을 수행합니다.
-  // 요청 된 phone 값과 동일한 예약 데이터를 삭제합니다.
+  // [DELETE] /book?phone=xxx
   deleteById: (req, res) => {
-    // TODO:
-    return res.status(200).json('not implemented');
+    const { phone } = req.query;
+    if (!phone) {
+      return res.status(400).json({ error: 'phone 쿼리값 필요' });
+    }
+    booking = booking.filter(b => b.phone !== phone);
+    // 삭제 후 전체 booking 배열 반환 (book_id 뺌)
+    return res.status(200).json(booking.map(stripBookId));
   },
 };
